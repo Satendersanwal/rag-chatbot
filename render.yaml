@@ -1,0 +1,98 @@
+projects:
+  - name: rag-chatbot-example
+    environments:
+      - name: production
+        services:
+          # Backend API service
+          - type: web
+            name: rag-chatbot-backend
+            runtime: docker
+            region: oregon
+            plan: starter
+            dockerfilePath: ./backend/Dockerfile
+            dockerContext: ./
+            healthCheckPath: /api/health
+            envVars:
+              - key: NODE_ENV
+                value: production
+              - key: PORT
+                value: 3001
+              - key: CORS_ORIGIN
+                fromService:
+                  type: web
+                  name: rag-chatbot-frontend
+                  envVarKey: RENDER_EXTERNAL_URL
+              - key: DB_HOST
+                fromDatabase:
+                  name: rag-chatbot-db
+                  property: host
+              - key: DB_PORT
+                fromDatabase:
+                  name: rag-chatbot-db
+                  property: port
+              - key: DB_NAME
+                fromDatabase:
+                  name: rag-chatbot-db
+                  property: database
+              - key: DB_USER
+                fromDatabase:
+                  name: rag-chatbot-db
+                  property: user
+              - key: DB_PASSWORD
+                fromDatabase:
+                  name: rag-chatbot-db
+                  property: password
+              - key: DB_POOL_MAX
+                value: 20
+              - key: OPENAI_API_KEY
+                sync: false
+              - key: OPENAI_EMBEDDING_MODEL
+                value: text-embedding-3-small
+              - key: OPENAI_CHAT_MODEL
+                value: gpt-4.1-mini
+              - key: OPENAI_TEMPERATURE
+                value: 0.7
+              - key: OPENAI_MAX_TOKENS
+                value: 1000
+              - key: OPENAI_MAX_RETRIES
+                value: 3
+              - key: OPENAI_RETRY_DELAY
+                value: 1000
+              - key: EMBEDDING_DIMENSION
+                value: 1536
+              - key: SIMILARITY_THRESHOLD
+                value: 0.1
+              - key: MAX_SOURCES
+                value: 5
+              - key: RUN_SEED
+                value: true
+              # Render generates a random key; copy it from the dashboard to call /api/chat/ingest
+              - key: ADMIN_API_KEY
+                generateValue: true
+              # Render's load balancer sits in front of the service; trust it for client IPs
+              - key: TRUST_PROXY
+                value: 1
+
+          # Frontend UI service
+          - type: web
+            name: rag-chatbot-frontend
+            runtime: docker
+            region: oregon
+            plan: starter
+            dockerfilePath: ./frontend/Dockerfile
+            dockerContext: ./
+            envVars:
+              - key: VITE_API_URL
+                fromService:
+                  type: web
+                  name: rag-chatbot-backend
+                  envVarKey: RENDER_EXTERNAL_URL
+
+        databases:
+          - name: rag-chatbot-db
+            databaseName: rag_chatbot
+            user: chat_bot
+            plan: free
+            region: oregon
+            postgresMajorVersion: "16"
+            ipAllowList: []
