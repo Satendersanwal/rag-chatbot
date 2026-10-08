@@ -8,7 +8,8 @@ projects:
             name: rag-chatbot-backend
             runtime: docker
             region: oregon
-            plan: starter
+            # free: sleeps after 15 min idle. Change to starter (paid) for always-on.
+            plan: free
             dockerfilePath: ./backend/Dockerfile
             dockerContext: ./
             healthCheckPath: /api/health
@@ -78,7 +79,7 @@ projects:
             name: rag-chatbot-frontend
             runtime: docker
             region: oregon
-            plan: starter
+            plan: free
             dockerfilePath: ./frontend/Dockerfile
             dockerContext: ./
             envVars:

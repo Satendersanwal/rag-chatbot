@@ -26,50 +26,46 @@ The quickstart guide walks you through getting everything running with Docker Co
 
 This project is pre-configured for one-click deployment to [Render](https://render.com/) using the included `render.yaml` blueprint.
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Satendersanwal/rag-chatbot)
+
 **What you get:**
 - ✅ Automatic database migrations on deployment
 - ✅ Automatic database seeding with 15 AI/ML docs
 - ✅ PostgreSQL with pgvector extension
-- ✅ Auto-scaling and health checks
+- ✅ Health checks
 - ✅ Separate backend and frontend services
 - ✅ Environment variable management
 
 **Deployment steps:**
 
-1. **Fork this repository to your GitHub account**
+1. **Click the "Deploy to Render" button above** and sign in to Render (signing in with GitHub is easiest).
+   - Deploying your own copy? Fork this repo first, then use `https://render.com/deploy?repo=<your fork URL>` or Render Dashboard → "New" → "Blueprint" → select your fork.
 
-2. **Create a new Blueprint Instance on Render:**
-   - Go to [Render Dashboard](https://dashboard.render.com)
-   - Click "New" → "Blueprint Instance"
-   - Connect your forked repository
-   - Select branch (usually `main`)
+2. **Enter your `OPENAI_API_KEY`** when prompted ([get one here](https://platform.openai.com/api-keys)). All other variables are pre-configured (including `RUN_SEED=true` and a generated `ADMIN_API_KEY`).
 
-3. **Configure environment variables:**
-   - Render will auto-detect `render.yaml`
-   - You'll be prompted to enter your `OPENAI_API_KEY` ([Get one here](https://platform.openai.com/api-keys))
-   - All other variables are pre-configured (including `RUN_SEED=true`)
+3. **Click "Deploy Blueprint"**. Render will:
+   - Create a PostgreSQL database with pgvector
+   - Build and deploy the backend with automatic migrations
+   - Seed the database with the 15 AI/ML documentation files
+   - Build and deploy the frontend
+   - Link the services together
 
-4. **Deploy:**
-   - Click "Apply" to create all services
-   - Render will:
-     - Create PostgreSQL database with pgvector
-     - Build and deploy backend with automatic migrations
-     - Automatically seed database with 15 AI/ML documentation files
-     - Build and deploy frontend
-     - Link services together
+   The first deploy takes roughly 5-10 minutes.
 
-5. **Access your deployed app:**
-   - Frontend: `https://your-app-name-frontend.onrender.com`
-   - Backend API: `https://your-app-name-backend.onrender.com`
+4. **Open your app** from the Render dashboard:
+   - Frontend: `https://rag-chatbot-frontend[-xxxx].onrender.com`
+   - Backend API: `https://rag-chatbot-backend[-xxxx].onrender.com` (try `/api/health`)
+
+   Render adds a random suffix if the name is already taken.
 
 **Note:** Database seeding is enabled by default (`RUN_SEED=true` in render.yaml). Docs that are already in the database are skipped, so you only pay a small one-time OpenAI API cost (~$0.01-0.02) for generating embeddings. To disable automatic seeding, change `RUN_SEED` to `false` in the Render dashboard after deployment.
 
 **Document ingestion:** `POST /api/chat/ingest` is protected by `ADMIN_API_KEY`, which Render generates for you. Copy it from the backend service's Environment tab and send it as `Authorization: Bearer <key>`.
 
-**Cost Estimate:**
-- 2 Web Services (frontend + backend): `render.yaml` uses the paid `starter` instance type. To run for free, change `plan: starter` to `plan: free` for both services (free services sleep when idle and take a while to wake up).
-- 1 PostgreSQL Database: Free plan (with limitations; see Render's docs)
-- OpenAI API (one-time seeding): ~$0.01-0.02, plus a small cost per chat message
+**Cost Estimate (everything on Render's free plan):**
+- 2 Web Services (frontend + backend): Free. Free services sleep after 15 minutes without traffic, so the first visit after that takes about a minute. For always-on, change `plan: free` to `plan: starter` (paid) in `render.yaml`.
+- 1 PostgreSQL Database: Free, but free databases **expire 30 days after creation** (with a 14-day grace period to upgrade). Upgrade it in the Render dashboard to keep your data.
+- OpenAI API: ~$0.01-0.02 one-time for seeding, plus a small cost per chat message
 
 ## ✨ Features
 
