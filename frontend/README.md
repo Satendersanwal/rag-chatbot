@@ -5,8 +5,8 @@ A modern chatbot interface built with React, Vite, TypeScript, and Tailwind CSS.
 ## ✨ Features
 
 - 💬 **Real-time Chat** - Full integration with RAG backend API
-- 📚 **Source Citations** - Shows reference count for each AI response
-- 🎯 **Token Usage Tracking** - Visual gauge showing context window utilization (GPT-4 Turbo 128k)
+- 📚 **Source Citations** - Lists the documents used for each AI response, with match scores
+- 🎯 **Token Usage Tracking** - Visual gauge showing context window utilization (gpt-4.1-mini, ~1M tokens)
 - 🔄 **Conversation Persistence** - Maintains conversation ID for multi-turn dialogues
 - 🎨 **Modern UI** - Beautiful interface with Tailwind CSS and Radix UI components
 - 🌙 **Dark Mode Support** - CSS variable-based theming
@@ -169,7 +169,7 @@ export const getApiUrl = (endpoint: string): string => {
    - Generates embedding for query
    - Searches vector database for relevant documents
    - Builds context with conversation history
-   - Generates AI response with GPT-4
+   - Generates AI response with the configured OpenAI chat model
 4. Backend returns response:
    ```json
    {
@@ -177,7 +177,10 @@ export const getApiUrl = (endpoint: string): string => {
      "data": {
        "message": "AI response",
        "conversationId": "uuid",
-       "sourceCount": 3,
+       "sources": [
+         { "id": "uuid", "content": "...", "metadata": { "topic": "Transformers" }, "similarity": 0.62 }
+       ],
+       "sourceCount": 1,
        "usage": {
          "promptTokens": 500,
          "completionTokens": 150,
@@ -186,7 +189,7 @@ export const getApiUrl = (endpoint: string): string => {
      }
    }
    ```
-5. Frontend displays response with source count and updates token gauge
+5. Frontend displays the response with its sources and updates the token gauge. Errors the user can act on (rate limit, message too long) are shown as-is.
 
 **Environment Variables:**
 - Development: `VITE_API_URL=http://localhost:3001`
@@ -262,7 +265,7 @@ The main `Chatbot` component includes:
 - Message list with user/assistant distinction
 - Real-time loading indicators
 - Token usage visualization
-- Source citation badges
+- Source list (document title + match score) under each answer
 - Auto-scrolling message area
 - Error handling with user feedback
 
@@ -273,7 +276,7 @@ Visual indicator showing context window usage:
 - **Yellow**: 70-90% usage  
 - **Red**: 90-100% usage
 
-Helps users understand when they're approaching the context limit (128k tokens for GPT-4 Turbo).
+Helps users understand when they're approaching the context limit (`CONTEXT_LIMIT` in `Chatbot.tsx`, set to ~1M tokens for gpt-4.1-mini; update it if you change the model).
 
 ## 🔧 Configuration
 
